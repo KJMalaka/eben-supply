@@ -1,4 +1,5 @@
 <?php
+// PRT362S — Eben Supply | Group KN3
 
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
