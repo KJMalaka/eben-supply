@@ -1,5 +1,5 @@
 @extends('layouts.app')
-{{-- PRT362S — Eben Supply | Group KN3 --}}
+{{-- Hlomla Magopeni 218070349 | Group KN3 --}}
 @section('title', 'Shopping Cart')
 
 @section('content')
