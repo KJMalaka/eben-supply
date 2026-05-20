@@ -68,6 +68,33 @@
         </div>
     </div>
 
+    {{-- Items --}}
+    <div class="card p-6">
+        <p class="form-label mb-5">Items Ordered</p>
+        <div class="space-y-4">
+            @foreach($order->items as $item)
+                <div class="flex items-center gap-4 pb-4 border-b border-stone-100 last:border-0 last:pb-0">
+                    <div class="w-16 h-16 rounded-xl overflow-hidden bg-[#F5F5F5] flex-shrink-0">
+                        <img src="{{ asset($item->product->image_path ?: 'images/products/placeholder.jpg') }}" alt="" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-heading font-semibold text-sm text-[#333333]">{{ $item->product->name }}</p>
+                        @if($item->size)<p class="text-xs text-stone-400">Size: {{ $item->size }}</p>@endif
+                        <p class="text-xs text-stone-400">R{{ number_format($item->unit_price, 2) }} × {{ $item->quantity }}</p>
+                    </div>
+                    <p class="font-heading font-black text-sm text-[#333333]">R{{ number_format($item->line_total, 2) }}</p>
+                </div>
+            @endforeach
+        </div>
+
+        @php $subtotal = $order->items->sum('line_total'); @endphp
+        <div class="border-t border-stone-100 mt-4 pt-4 space-y-2 text-sm">
+            <div class="flex justify-between text-stone-500"><span>Subtotal</span><span>R{{ number_format($subtotal, 2) }}</span></div>
+            <div class="flex justify-between text-stone-500"><span>Delivery</span><span>{{ $order->fulfillment === 'delivery' ? 'R60.00' : 'Free (Pickup)' }}</span></div>
+            <div class="flex justify-between font-heading font-black border-t border-stone-100 pt-2">
+                <span>Total</span><span>R{{ number_format($order->total_amount, 2) }}</span>
+            </div>
+        </div>
     
     </div>
 </div>
