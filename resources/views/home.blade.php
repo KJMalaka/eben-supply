@@ -1,8 +1,5 @@
 @extends('layouts.app')
-<<<<<<< HEAD
-=======
-{{-- PRT362S — Eben Supply | Group KN3 --}}
->>>>>>> 09ba8fc83fc249adb6b17df0c29b3ac84fd4f4c5
+{{-- Dumisane Madondo 230949703 | Group KN3 --}}
 @section('title', 'Home')
 
 @section('content')
