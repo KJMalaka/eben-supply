@@ -183,6 +183,7 @@ class ProductSeeder extends Seeder
             $sizes = $data['sizes'];
             unset($data['sizes']);
 
+            // Use updateOrCreate so re-seeding updates image paths too
             $product = Product::updateOrCreate(
                 ['name' => $data['name']],
                 $data

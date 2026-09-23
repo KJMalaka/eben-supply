@@ -22,7 +22,7 @@ jobs:
           coverage: none
 
       - name: Create .env
-        run: touch .env
+        run: printf "APP_KEY=\nAPP_ENV=testing\nAPP_DEBUG=true\n" > .env
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
@@ -35,7 +35,7 @@ jobs:
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Generate app key
-        run: php artisan key:generate
+        run: php artisan key:generate --force
 
       - name: Setup Node
         uses: actions/setup-node@v4
