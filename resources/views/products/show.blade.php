@@ -1,5 +1,5 @@
 @extends('layouts.app')
-{{-- PRT362S — Eben Supply | Group KN3 --}}
+{{-- Dumisane Madondo 230949703 | Group KN3 --}}
 @section('title', $product->name)
 
 @section('content')
