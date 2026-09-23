@@ -1,5 +1,8 @@
 <?php
+<<<<<<< HEAD
 // 230443370 Katlego Malaka | Group KN3
+=======
+>>>>>>> d8fa16a0a306b03d560b177d8046fb3e993b37bf
 
 namespace App\Http\Controllers\Admin;
 
@@ -12,13 +15,19 @@ class InventoryController extends Controller
 {
     public function index()
     {
+<<<<<<< HEAD
         $products = Product::with('sizes')->latest()->get();
+=======
+        $products = Product::with('sizes')->orderBy('name')->get();
+
+>>>>>>> d8fa16a0a306b03d560b177d8046fb3e993b37bf
         return view('admin.inventory.index', compact('products'));
     }
 
     public function update(Request $request)
     {
         $request->validate([
+<<<<<<< HEAD
             'stock'    => 'required|array',
             'stock.*'  => 'integer|min:0',
             'sizes'    => 'nullable|array',
@@ -42,5 +51,36 @@ class InventoryController extends Controller
         }
 
         return redirect()->route('admin.inventory')->with('success', 'Stock levels updated.');
+=======
+            'stock'    => 'array',
+            'stock.*'  => 'integer|min:0',
+            'sizes'    => 'array',
+            'sizes.*'  => 'integer|min:0',
+        ]);
+
+        // Products without size variants — stock is edited directly.
+        foreach ($request->input('stock', []) as $productId => $quantity) {
+            Product::whereKey($productId)->update(['stock_quantity' => $quantity]);
+        }
+
+        // Products with size variants — update each size, then re-total the
+        // parent product's stock_quantity so dashboard/low-stock badges stay accurate.
+        $touchedProductIds = [];
+        foreach ($request->input('sizes', []) as $sizeId => $quantity) {
+            $size = ProductSize::find($sizeId);
+            if (! $size) {
+                continue;
+            }
+            $size->update(['stock_quantity' => $quantity]);
+            $touchedProductIds[$size->product_id] = true;
+        }
+
+        foreach (array_keys($touchedProductIds) as $productId) {
+            $total = ProductSize::where('product_id', $productId)->sum('stock_quantity');
+            Product::whereKey($productId)->update(['stock_quantity' => $total]);
+        }
+
+        return redirect()->route('admin.inventory')->with('success', 'Inventory updated.');
+>>>>>>> d8fa16a0a306b03d560b177d8046fb3e993b37bf
     }
 }
