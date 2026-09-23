@@ -91,7 +91,7 @@
                                 <flux:menu.separator />
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <flux:menu.item as="button" type="submit" icon="arrow-right-on-rectangle" variant="danger">Sign Out</flux:menu.item>
+                                    <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" variant="danger">Sign Out</flux:menu.item>
                                 </form>
                             </flux:menu>
                         </flux:dropdown>
