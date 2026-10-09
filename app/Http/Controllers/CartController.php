@@ -19,7 +19,7 @@ class CartController extends Controller
 
     public function index()
     {
-        $cartItems = $this->getCartQuery()->with('product')->get();
+        $cartItems = $this->getCartQuery()->with('product.sizes')->get();
         $subtotal  = $cartItems->sum(fn($item) => $item->quantity * $item->product->price);
 
         return view('cart.index', compact('cartItems', 'subtotal'));
