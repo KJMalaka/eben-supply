@@ -93,6 +93,18 @@ class CartCheckoutTest extends TestCase
         $this->assertDatabaseHas('cart_items', ['product_id' => $product->id, 'size' => 'M', 'quantity' => 2]);
     }
 
+    public function test_stock_error_message_is_shown_on_the_page(): void
+    {
+        $product = $this->tshirt(mStock: 1);
+
+        $this->from('/products/' . $product->id)
+            ->followingRedirects()
+            ->post('/cart/add', ['product_id' => $product->id, 'size' => 'M', 'quantity' => 2])
+            ->assertOk()
+            ->assertSee('toast-show', false)
+            ->assertSee('Only 1 of Test Tee (M) in stock.');
+    }
+
     public function test_cannot_add_size_product_does_not_have(): void
     {
         $product = $this->tshirt();
