@@ -10,18 +10,39 @@
     @include('partials.fonts')
     @fluxAppearance
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    {{-- Phone drawer styles (kept here so they work without rebuilding Tailwind) --}}
+    <style>
+        #admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: 30; }
+        .admin-menu-btn { background: none; border: 0; padding: 8px; cursor: pointer; color: rgba(255, 255, 255, 0.7); line-height: 0; }
+        .admin-menu-btn:hover { color: #fff; }
+        @media (max-width: 1023px) {
+            #admin-sidebar.is-open { display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; width: 16rem; z-index: 40; }
+            #admin-overlay.is-open { display: block; }
+        }
+    </style>
 </head>
 <body class="bg-stone-50 text-[#333333] min-h-screen antialiased">
 
+    {{-- Mobile: dark overlay behind the drawer --}}
+    <div id="admin-overlay"></div>
+
     <div class="flex min-h-screen">
 
-        {{-- ── Sidebar ── --}}
-        <aside class="hidden lg:flex lg:flex-col lg:w-64 lg:flex-shrink-0 bg-[#333333] text-white">
-            <div class="h-16 flex items-center gap-3 px-6 border-b border-white/10">
-                <div class="w-8 h-8 rounded-full overflow-hidden ring-2 ring-[#D4C7B0] flex-shrink-0">
-                    <img src="{{ asset('images/products/logo.jpg') }}" alt="Eben Supply" class="w-full h-full object-cover">
+        {{-- ── Sidebar (hidden on phones until the menu button opens it) ── --}}
+        <aside id="admin-sidebar" class="hidden lg:flex lg:flex-col lg:w-64 lg:flex-shrink-0 bg-[#333333] text-white">
+            <div class="h-16 flex items-center justify-between gap-3 px-6 border-b border-white/10">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full overflow-hidden ring-2 ring-[#D4C7B0] flex-shrink-0">
+                        <img src="{{ asset('images/products/logo.jpg') }}" alt="Eben Supply" class="w-full h-full object-cover">
+                    </div>
+                    <span class="font-black text-sm tracking-widest font-heading uppercase">Eben Supply</span>
                 </div>
-                <span class="font-black text-sm tracking-widest font-heading uppercase">Eben Supply</span>
+                <button type="button" id="admin-menu-close" aria-label="Close admin menu" class="admin-menu-btn lg:hidden">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
             </div>
 
             <nav class="flex-1 px-3 py-6 space-y-1">
@@ -64,9 +85,16 @@
         {{-- ── Main column ── --}}
         <div class="flex-1 flex flex-col min-w-0">
 
-            {{-- Mobile top bar (sidebar is desktop-only above) --}}
+            {{-- Mobile top bar: the menu button opens the sidebar drawer --}}
             <header class="lg:hidden bg-[#333333] text-white h-14 flex items-center justify-between px-4">
-                <span class="font-black text-sm tracking-widest font-heading uppercase">Eben Supply Admin</span>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="admin-menu-open" aria-label="Open admin menu" class="admin-menu-btn">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                    <span class="font-black text-sm tracking-widest font-heading uppercase">Eben Supply Admin</span>
+                </div>
                 <a href="{{ route('home') }}" class="inline-block py-2 text-xs text-white/60 hover:text-white">Store →</a>
             </header>
 
@@ -83,6 +111,24 @@
             </main>
         </div>
     </div>
+
+    {{-- Drawer open/close (plain JS, no extra library needed) --}}
+    <script>
+        (function () {
+            var sidebar = document.getElementById('admin-sidebar');
+            var overlay = document.getElementById('admin-overlay');
+            var openBtn = document.getElementById('admin-menu-open');
+            var closeBtn = document.getElementById('admin-menu-close');
+
+            function openMenu()  { sidebar.classList.add('is-open'); overlay.classList.add('is-open'); }
+            function closeMenu() { sidebar.classList.remove('is-open'); overlay.classList.remove('is-open'); }
+
+            openBtn.addEventListener('click', openMenu);
+            closeBtn.addEventListener('click', closeMenu);
+            overlay.addEventListener('click', closeMenu);
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+        })();
+    </script>
 
     @fluxScripts
     @stack('scripts')
