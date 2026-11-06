@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-{{-- Phelo Mguca — 2330707726 | Group KN3 --}}
+{{-- PRT362S — Eben Supply | Group KN3 --}}
 @section('title', 'Products')
 
 @section('content')
@@ -26,8 +26,6 @@
             </thead>
             <tbody class="divide-y divide-stone-50">
                 @forelse($products as $product)
-                    @php
-                    @endphp
                     <tr class="hover:bg-stone-50 transition-colors">
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
@@ -41,7 +39,12 @@
                             </div>
                         </td>
                         <td class="px-6 py-4"><span class="badge {{ $product->category_badge }}">{{ $product->category_label }}</span></td>
-                        <td class="px-6 py-4 font-heading font-bold text-[#333333]">R{{ number_format($product->price, 2) }}</td>
+                        <td class="px-6 py-4 font-heading font-bold text-[#333333]">
+                            R{{ number_format($product->price, 2) }}
+                            @if($product->sale_status)
+                                <span class="block text-xs font-semibold {{ $product->sale_status === 'active' ? 'text-red-600' : 'text-stone-400' }}">Sale R{{ number_format($product->sale_price, 2) }} · {{ ucfirst($product->sale_status) }}</span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4">
                             @if($product->stock_quantity === 0)
                                 <span class="text-xs font-semibold text-red-500">Out of Stock</span>
@@ -62,10 +65,10 @@
                         </td>
                         <td class="px-6 py-4 text-right">
                             <div class="flex items-center justify-end gap-3">
-                                <a href="{{ route('admin.products.edit', $product) }}" class="inline-block px-2 py-2 text-xs font-semibold text-stone-400 hover:text-[#333333] transition-colors">Edit</a>
+                                <a href="{{ route('admin.products.edit', $product) }}" class="text-xs font-semibold text-stone-400 hover:text-[#333333] transition-colors py-2 px-1">Edit</a>
                                 <form action="{{ route('admin.products.destroy', $product) }}" method="POST" onsubmit="return confirm('Delete this product?')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="px-2 py-2 text-xs font-semibold text-stone-300 hover:text-red-500 transition-colors">Delete</button>
+                                    <button type="submit" class="text-xs font-semibold text-stone-300 hover:text-red-500 transition-colors py-2 px-1">Delete</button>
                                 </form>
                             </div>
                         </td>

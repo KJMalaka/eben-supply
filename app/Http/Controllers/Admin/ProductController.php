@@ -10,13 +10,14 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
     /** Uploaded images live under public/ so they work without a storage symlink. */
     private const UPLOAD_DIR = 'images/products/uploads';
+
+    private const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 
     public function index()
     {
@@ -26,19 +27,18 @@ class ProductController extends Controller
 
     public function create()
     {
-        $product = new Product(['is_featured' => false]);
-        $product->setRelation('sizes', collect());
-
-        return view('admin.products.create', compact('product'));
+        $allSizes = self::SIZES;
+        return view('admin.products.create', compact('allSizes'));
     }
 
     public function store(Request $request)
     {
-        $data = $this->validated($request, null);
+        $data = $this->validated($request);
 
         $product = DB::transaction(function () use ($request, $data) {
             $product = Product::create($this->attributes($request, $data) + [
-                'image_path' => $request->hasFile('image') ? $this->storeImage($request->file('image')) : null,
+                'stock_quantity' => 0,
+                'image_path'     => $request->hasFile('image') ? $this->storeImage($request->file('image')) : null,
             ]);
             $this->syncStock($product, $data);
 
@@ -52,12 +52,13 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $product->load('sizes');
-        return view('admin.products.edit', compact('product'));
+        $allSizes = self::SIZES;
+        return view('admin.products.edit', compact('product', 'allSizes'));
     }
 
     public function update(Request $request, Product $product)
     {
-        $data = $this->validated($request, $product);
+        $data = $this->validated($request);
 
         DB::transaction(function () use ($request, $data, $product) {
             $attributes = $this->attributes($request, $data);
@@ -76,13 +77,13 @@ class ProductController extends Controller
     }
 
     /**
-     * Soft delete: past orders keep pointing at the product. It is removed from
-     * every shopper's cart so nobody can check out with it.
+     * Soft delete: past orders keep pointing at the product. It is also removed
+     * from every shopper's cart so nobody can check out with it.
      */
     public function destroy(Product $product)
     {
         DB::transaction(function () use ($product) {
-            $product->cartItems()->delete();
+            DB::table('cart_items')->where('product_id', $product->id)->delete();
             $product->delete();
         });
 
@@ -96,37 +97,32 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Featured status updated.');
     }
 
-    private function validated(Request $request, ?Product $product): array
+    private function validated(Request $request): array
     {
         $data = $request->validate([
             'name'           => 'required|string|max:150',
             'description'    => 'nullable|string',
-            'category'       => ['required', Rule::in(Product::categoryKeys())],
+            'category'       => 'required|in:tshirt,cap,tote_bag',
             'price'          => 'required|numeric|min:0.01|max:99999',
             'is_featured'    => 'boolean',
-            'is_kids'        => 'boolean',
-            // Every product needs a real photo; it can be kept when editing.
-            'image'          => ($product?->image_path ? 'nullable' : 'required') . '|image|max:2048',
-            'remove_sale'    => 'boolean',
-            'sale_price'     => 'exclude_if:remove_sale,1|nullable|required_with:sale_starts_at,sale_ends_at|numeric|gt:0|lt:price',
-            'sale_starts_at' => 'exclude_if:remove_sale,1|nullable|date',
-            'sale_ends_at'   => array_filter(['exclude_if:remove_sale,1', 'nullable', 'date', $request->filled('sale_starts_at') ? 'after:sale_starts_at' : null]),
-            'sizing'         => 'required|in:sized,one_size',
+            'image'          => 'nullable|image|max:2048',
+            // "sized" = stock per size, "one_size" = a single stock number.
+            // If the form does not send it, the product is treated as sized.
+            'sizing'         => 'nullable|in:sized,one_size',
             'stock_quantity' => 'required_if:sizing,one_size|nullable|integer|min:0',
-            'sizes'          => 'required_if:sizing,sized|nullable|array',
+            'sizes'          => 'nullable|array',
             'sizes.*'        => 'integer|min:0',
         ]);
 
-        if ($data['sizing'] === 'sized') {
-            $allowed = ProductSize::sizesFor($request->boolean('is_kids'));
-            $unknown = array_diff(array_keys($data['sizes'] ?? []), $allowed);
-            if ($unknown) {
-                throw ValidationException::withMessages(['sizes' => 'Not a ' . ($request->boolean('is_kids') ? 'kids' : 'adult') . ' size: ' . implode(', ', $unknown)]);
-            }
-        }
+        $data['sizing'] = $data['sizing'] ?? 'sized';
 
-        if ($request->boolean('remove_sale')) {
-            $data['sale_price'] = $data['sale_starts_at'] = $data['sale_ends_at'] = null;
+        if ($data['sizing'] === 'sized') {
+            $unknown = array_diff(array_keys($data['sizes'] ?? []), self::SIZES);
+            if ($unknown) {
+                throw ValidationException::withMessages([
+                    'sizes' => 'Not a valid size: ' . implode(', ', $unknown),
+                ]);
+            }
         }
 
         return $data;
@@ -140,18 +136,13 @@ class ProductController extends Controller
             'category'    => $data['category'],
             'price'       => $data['price'],
             'is_featured' => $request->boolean('is_featured'),
-            'is_kids'     => $request->boolean('is_kids'),
-            // Sale dates are entered in store time (config app.timezone).
-            'sale_price'     => $data['sale_price'] ?? null,
-            'sale_starts_at' => $data['sale_starts_at'] ?? null,
-            'sale_ends_at'   => $data['sale_ends_at'] ?? null,
         ];
     }
 
     /**
-     * Sized products keep one row per size of their set (adult or kids) and a
-     * total that matches; one-size
-     * products have no size rows and store their stock on the product.
+     * Sized products keep one row per size and a total that matches the sum.
+     * One-size products (caps, totes) have no size rows and store their stock
+     * on the product itself, so saving never wipes their stock to 0.
      */
     private function syncStock(Product $product, array $data): void
     {
@@ -161,15 +152,15 @@ class ProductController extends Controller
             return;
         }
 
-        $sizes = $product->sizeOptions();
-        $product->sizes()->whereNotIn('size', $sizes)->delete();
+        $product->sizes()->whereNotIn('size', self::SIZES)->delete();
 
-        foreach ($sizes as $size) {
+        foreach (self::SIZES as $size) {
             ProductSize::updateOrCreate(
                 ['product_id' => $product->id, 'size' => $size],
                 ['stock_quantity' => (int) ($data['sizes'][$size] ?? 0)]
             );
         }
+
         $product->update(['stock_quantity' => $product->sizes()->sum('stock_quantity')]);
     }
 

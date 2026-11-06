@@ -144,7 +144,7 @@
     <h2 class="font-heading font-bold text-sm text-[#A3A380] uppercase tracking-wider mb-4">Product Image</h2>
     @if($product->image_path)
         <div class="mb-4 flex items-center gap-4">
-            <img src="{{ $product->image_url }}" alt="" class="w-24 h-24 rounded-xl object-cover">
+            <img loading="lazy" decoding="async" src="{{ $product->image_url }}" alt="" class="w-24 h-24 rounded-xl object-cover">
             <p class="text-xs text-stone-400">Current image</p>
         </div>
     @endif
