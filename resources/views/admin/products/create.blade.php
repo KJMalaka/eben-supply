@@ -12,7 +12,7 @@
     <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
         @csrf
 
-        @include('admin.products._form')
+        @include('admin.products._form', ['product' => $product])
 
         <div class="flex gap-3">
             <button type="submit" class="btn-primary text-sm px-8 py-3">Create Product</button>

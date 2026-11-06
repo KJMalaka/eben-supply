@@ -118,10 +118,11 @@ class ProductController extends Controller
         ]);
 
         if ($data['sizing'] === 'sized') {
-            $allowed = ProductSize::sizesFor($request->boolean('is_kids'));
+            $isKids = (bool) ($data['is_kids'] ?? false);
+            $allowed = ProductSize::sizesFor($isKids);
             $unknown = array_diff(array_keys($data['sizes'] ?? []), $allowed);
             if ($unknown) {
-                throw ValidationException::withMessages(['sizes' => 'Not a ' . ($request->boolean('is_kids') ? 'kids' : 'adult') . ' size: ' . implode(', ', $unknown)]);
+                throw ValidationException::withMessages(['sizes' => 'Not a ' . ($isKids ? 'kids' : 'adult') . ' size: ' . implode(', ', $unknown)]);
             }
         }
 
@@ -139,8 +140,8 @@ class ProductController extends Controller
             'description' => $data['description'] ?? null,
             'category'    => $data['category'],
             'price'       => $data['price'],
-            'is_featured' => $request->boolean('is_featured'),
-            'is_kids'     => $request->boolean('is_kids'),
+            'is_featured' => (bool) ($data['is_featured'] ?? false),
+            'is_kids'     => (bool) ($data['is_kids'] ?? false),
             // Sale dates are entered in store time (config app.timezone).
             'sale_price'     => $data['sale_price'] ?? null,
             'sale_starts_at' => $data['sale_starts_at'] ?? null,

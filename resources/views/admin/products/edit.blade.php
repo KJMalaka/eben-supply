@@ -12,7 +12,7 @@
     <form action="{{ route('admin.products.update', $product) }}" method="POST" enctype="multipart/form-data" class="space-y-5">
         @csrf @method('PUT')
 
-        @include('admin.products._form')
+        @include('admin.products._form', ['product' => $product])
 
         <div class="flex gap-3">
             <button type="submit" class="btn-primary text-sm px-8 py-3">Update Product</button>
