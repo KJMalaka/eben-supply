@@ -94,17 +94,23 @@
 
     /* ── Badges ──────────────────────────────────── */
     .badge {
-        @apply inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wide;
+        @apply inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wide whitespace-nowrap;
     }
     .badge-tshirt   { @apply bg-rose-50 text-rose-700; }
     .badge-cap      { @apply bg-sky-50 text-sky-700; }
     .badge-tote_bag { @apply bg-emerald-50 text-emerald-700; }
+    .badge-kids     { @apply bg-violet-50 text-violet-700; }
+    .badge-sweater  { @apply bg-amber-50 text-amber-800; }
+    .badge-pants    { @apply bg-indigo-50 text-indigo-700; }
 
     /* ── Status badges ───────────────────────────── */
     .status-pending   { @apply bg-amber-100 text-amber-800; }
     .status-confirmed { @apply bg-blue-100 text-blue-800; }
     .status-ready     { @apply bg-green-100 text-green-800; }
     .status-collected { @apply bg-stone-100 text-stone-600; }
+    /* paid / cancelled — Hlomla Magopeni 218070349 */
+    .status-paid      { @apply bg-emerald-100 text-emerald-800; }
+    .status-cancelled { @apply bg-red-100 text-red-700; }
 
     /* ── Nav link ────────────────────────────────── */
     .nav-link {
@@ -130,7 +136,7 @@
 
     /* ── Size selector buttons ───────────────────── */
     .size-btn {
-        @apply w-10 h-10 flex items-center justify-center rounded-lg border border-stone-200
+        @apply min-w-[2.5rem] px-2 h-10 flex items-center justify-center rounded-lg border border-stone-200
                text-sm font-heading font-bold text-stone-600 bg-white
                hover:border-[#333333] hover:text-[#333333]
                transition-all duration-150 cursor-pointer select-none;

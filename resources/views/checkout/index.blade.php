@@ -121,7 +121,7 @@
                     @foreach($cartItems as $item)
                         <div class="flex gap-3 items-center">
                             <div class="w-11 h-11 rounded-lg overflow-hidden bg-[#F5F5F5] flex-shrink-0">
-                                <img loading="lazy" decoding="async" src="{{ asset($item->product->image_path ?: 'images/products/placeholder.jpg') }}" alt="" class="w-full h-full object-cover">
+                                <img loading="lazy" decoding="async" src="{{ $item->product->image_url }}" alt="" class="w-full h-full object-cover">
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs font-medium text-[#333333] leading-tight truncate">{{ $item->product->name }}</p>
@@ -152,12 +152,15 @@
     const totalEl = document.getElementById('total-display');
     const sub     = {{ $subtotal }};
 
+    // Same format as PHP number_format(x, 2): R1,186.00 — Hlomla Magopeni 218070349
+    const rand = n => 'R' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
     radios.forEach(r => r.addEventListener('change', () => {
         const isDelivery = r.value === 'delivery' && r.checked;
         addrDiv.classList.toggle('hidden', !isDelivery);
         feeEl.textContent   = isDelivery ? 'R60.00' : 'Free';
         feeEl.className     = isDelivery ? 'font-medium' : 'text-emerald-600';
-        totalEl.textContent = 'R' + (isDelivery ? sub + 60 : sub).toFixed(2);
+        totalEl.textContent = rand(isDelivery ? sub + 60 : sub);
     }));
 </script>
 @endpush

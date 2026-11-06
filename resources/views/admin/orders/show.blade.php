@@ -12,6 +12,8 @@
             'confirmed' => 'status-confirmed',
             'ready'     => 'status-ready',
             'collected' => 'status-collected',
+            'paid'      => 'status-paid',      // paid/cancelled — Hlomla Magopeni 218070349
+            'cancelled' => 'status-cancelled',
         ];
     @endphp
 
@@ -26,15 +28,21 @@
                     {{ ucfirst($order->status) }}
                 </span>
             </div>
-            <form action="{{ route('admin.orders.updateStatus', $order) }}" method="POST" class="flex items-center gap-2">
+            {{-- Closed orders can't change; cancelling asks first — Hlomla Magopeni 218070349 --}}
+            @if($order->isClosed())
+                <p class="text-xs text-stone-400 max-w-[14rem]">This order is {{ $order->status }} and can no longer be changed.</p>
+            @else
+            <form action="{{ route('admin.orders.updateStatus', $order) }}" method="POST" class="flex items-center gap-2"
+                  onsubmit="return this.status.value !== 'cancelled' || confirm('Cancel this order and return its items to stock?');">
                 @csrf @method('PUT')
                 <select name="status" class="form-input py-2 text-sm pr-8">
-                    @foreach(['pending', 'confirmed', 'ready', 'collected'] as $s)
+                    @foreach(\App\Models\Order::ADMIN_STATUSES as $s)
                         <option value="{{ $s }}" {{ $order->status === $s ? 'selected' : '' }}>{{ ucfirst($s) }}</option>
                     @endforeach
                 </select>
                 <button type="submit" class="btn-primary text-xs px-5 py-2">Update</button>
             </form>
+            @endif
         </div>
     </div>
 
@@ -81,7 +89,7 @@
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-lg overflow-hidden bg-[#F5F5F5] flex-shrink-0">
-                                        <img loading="lazy" decoding="async" src="{{ asset($item->product->image_path ?: 'images/products/placeholder.jpg') }}"
+                                        <img loading="lazy" decoding="async" src="{{ $item->product->image_url }}"
                                              alt="" class="w-full h-full object-cover">
                                     </div>
                                     <span class="font-medium text-[#333333]">{{ $item->product->name }}</span>
