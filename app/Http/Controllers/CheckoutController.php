@@ -129,7 +129,7 @@ class CheckoutController extends Controller
     {
         $order = Order::create([
             'user_id'          => auth()->id(),
-            'status'           => 'pending',
+            'status'           => 'paid', // the simulated payment has gone through (#31 adds this status)
             'fulfillment'      => $pending['fulfillment'],
             'total_amount'     => $pending['total'],
             'contact_name'     => $pending['contact_name'],

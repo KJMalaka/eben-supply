@@ -40,6 +40,23 @@ class OrderStatusTest extends TestCase
         return [$order, $tee];
     }
 
+    public function test_checkout_creates_orders_as_paid(): void
+    {
+        $user = User::factory()->create();
+        $tote = Product::create(['name' => 'Tote', 'category' => 'tote_bag', 'price' => 150, 'stock_quantity' => 2]);
+        \App\Models\CartItem::create(['user_id' => $user->id, 'product_id' => $tote->id, 'quantity' => 1]);
+
+        $this->actingAs($user)->post('/checkout', [
+            'contact_name' => 'A', 'contact_phone' => '1', 'contact_email' => 'a@test.co.za', 'fulfillment' => 'pickup',
+        ]);
+        $this->post('/checkout/payment');
+
+        $order = Order::firstOrFail();
+        $this->assertSame('paid', $order->status);
+        $this->get(route('order.confirmation'))->assertSee('Paid');
+        $this->get("/my-orders/{$order->id}")->assertSeeInOrder(['Paid', 'Confirmed', 'Ready', 'Collected']);
+    }
+
     public function test_admin_can_mark_a_pending_order_paid(): void
     {
         $customer = User::factory()->create();
