@@ -1,5 +1,8 @@
-<x-layouts.admin title="Dashboard">
-{{-- Matuma Malapile 222904267 | Group KN3 --}}
+@extends('layouts.admin')
+{{-- PRT362S — Eben Supply | Group KN3 --}}
+@section('title', 'Dashboard')
+
+@section('content')
 
 {{-- Stat cards --}}
 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
@@ -20,7 +23,7 @@
         </div>
         <p class="font-heading font-black text-4xl text-[#333333]">{{ $value }}</p>
         @if($label === 'Low Stock' && $value > 0)
-            <a href="{{ route('admin.inventory') }}" class="text-xs text-[#A3A380] hover:text-[#333333] mt-1 inline-block font-medium transition-colors">View inventory →</a>
+            <a href="{{ route('admin.inventory') }}" class="text-xs text-[#A3A380] hover:text-[#333333] mt-1 inline-block py-2 font-medium transition-colors">View inventory →</a>
         @endif
     </div>
     @endforeach
@@ -64,7 +67,7 @@
 <div class="bg-white rounded-xl border border-stone-100 shadow-soft overflow-hidden">
     <div class="px-6 py-4 border-b border-stone-100 flex items-center justify-between">
         <h2 class="font-heading font-bold text-sm text-[#333333]">Recent Orders</h2>
-        <a href="{{ route('admin.orders.index') }}" class="inline-block py-2 text-xs font-semibold text-[#A3A380] hover:text-[#333333] transition-colors font-heading">View All →</a>
+        <a href="{{ route('admin.orders.index') }}" class="text-xs font-semibold text-[#A3A380] hover:text-[#333333] transition-colors font-heading inline-block py-2">View All →</a>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full text-sm">
@@ -111,4 +114,4 @@
         </table>
     </div>
 </div>
-</x-layouts.admin>
+@endsection
